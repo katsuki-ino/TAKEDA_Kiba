@@ -14,44 +14,32 @@ import dash_table
 #     drug_properties = pickle.load(f)
 
 
-
+addtional_info = pd.read_csv('data/kiba_addtional_info.csv')
 
 class DataVersion_Manager:
     def __init__(self):
-        with open('data/v2/gene_drug_report.pkl', 'rb') as f:
-            self.phase_df = pickle.load(f)
-
-        with open('data/v2/drug_properties.pkl', 'rb') as f:
-            self.drug_properties = pickle.load(f)
-
-        self.path_data = pd.read_table('data/v1/plot_graph_data.txt')
-
-        with open('data/share_genes.csv') as f:
-            reader = csv.reader(f)
-            for row in reader:
-                self.share_gene = row
-
-        with open('data/share_drug.csv') as f:
-            reader = csv.reader(f)
-            for row in reader:
-                self.share_drug = row
+        self.path_data = pd.read_pickle('data/v1/path.pkl')
+        
+        self.microglia = list(addtional_info["microglia"])
+        self.oligodendrocyte = list(addtional_info["oligodendrocyte"])
+        self.oligodendrocyte_progenitor_cell = list(addtional_info["oligodendrocyte progenitor cell"])
+        self.perivascular = list(addtional_info["perivascular"])
+        self.excitatory_neuron = list(addtional_info["excitatory neuron"])
+        self.astrocyte = list(addtional_info["astrocyte"])
+        self.inhibitory_neuron = list(addtional_info["inhibitory neuron"])
+        self.endothelial_cell = list(addtional_info["endothelial cell"])
+        self.myelin_debris_clearance = list(addtional_info["myelin debris clearance"])
+        self.remyelination = list(addtional_info["remyelination"])
+        self.pred = list(addtional_info["AI予測遺伝子"])
 
 
-    def update_selfvalue(self, ver):
-        # with open('data/'+ver+'/gene_drug_report.pkl', 'rb') as f:
-        #     self.phase_df = pickle.load(f)
-
-        # with open('data/'+ver+'/drug_properties.pkl', 'rb') as f:
-        #     self.drug_properties = pickle.load(f)
-
-        self.path_data = pd.read_table('data/'+ver+'/plot_graph_data.txt')
+    def update_graph(self, ver):
+        self.path_data = pd.read_pickle('data/'+ver+'/path.pkl')
 
 
     def paging(self):
         path = self.path_data
         kamei = ['DRD2','KCNN3', 'SLC6A3', 'COMT', 'ATP4', 'ADRA2C', 'GABRG2', 'OPRM1', 'MAOA', 'MAOB', 'DRD4', 'HTR1A', 'DRD3']
-        # path = pd.read_table('data/' + ver + 'NGLY1_plot_graph_data_20201214_no_VCP.txt')
-        # phase_df = pd.read_json('phase_data.json')
         
         # edge処理
         path = path[path['sources']!='S']
@@ -79,18 +67,7 @@ class DataVersion_Manager:
             nodes.append(data['target'])
         
         nodes = list(set(nodes))
-
         page_nodes = []
-        # for name in nodes:
-        #     if phase_df.loc[name, 'max_phase']==4:
-        #         page_nodes.append({'data': {'id': name, 'label': name}, 'classes': 'havedrug'})
-        #     elif name in starts:
-        #         page_nodes.append({'data': {'id': name, 'label': name}, 'classes': 'causality'})
-        #     elif name in ends:
-        #         page_nodes.append({'data': {'id': name, 'label': name},  'classes': 'responsive'})
-        #     else:
-        #         page_nodes.append({'data': {'id': name, 'label': name}})
-
 
         for name in nodes:
             node = {}
@@ -100,23 +77,11 @@ class DataVersion_Manager:
             elif name in ends:
                 node['classes'] = 'responsive'
 
-            if name in list(self.phase_df.index) and self.phase_df.loc[name, 'max_phase']==4:
-                if 'classes' not in node.keys():
-                    node['classes'] = 'havedrug'
-                else:
-                    node['classes'] = node['classes']+' havedrug'
-
-            if name in kamei:
-                if 'classes' not in node.keys():
-                    node['classes'] = 'kamei'
-                else:
-                    node['classes'] = node['classes']+' kamei'
-
-            if name in self.share_gene:
-                if 'classes' not in node.keys():
-                    node['classes'] = 'share'
-                else:
-                    node['classes'] = node['classes']+' share'
+            # if name in list(self.phase_df.index) and self.phase_df.loc[name, 'max_phase']==4:
+            #     if 'classes' not in node.keys():
+            #         node['classes'] = 'havedrug'
+            #     else:
+            #         node['classes'] = node['classes']+' havedrug'
             
             page_nodes.append(node)
                 
@@ -133,9 +98,6 @@ class DataVersion_Manager:
         drugs = [i.upper() for i in df['Drug']]
         index_list = [i for i, v in enumerate(drugs) if v in self.share_drug]
         table_condition_data = []
-        # print('share', self.share_drug)
-        # print('drugs', drugs)
-        # print('index_lsit', index_list)
         for i in index_list:
             table_condition_data.append(
                     {

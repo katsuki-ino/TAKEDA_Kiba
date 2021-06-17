@@ -15,6 +15,7 @@ import dash_table
 import dash_core_components as dcc
 import dash_cytoscape as cyto
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 
 # from cytograph import cytograph
@@ -28,7 +29,7 @@ cyto.load_extra_layouts()
 # app initialize
 app = dash.Dash(__name__,
                 # url_base_pathname='/interactive_cascade/',
-                # external_stylesheets=[dbc.themes.DARKLY],
+                external_stylesheets=[dbc.themes.BOOTSTRAP],
                 # serve_locally=False,
                 prevent_initial_callbacks=True, 
                 # suppress_callback_exceptions=True
@@ -59,8 +60,8 @@ cytograph =  cyto.Cytoscape(
                         'animationDuration': 1000
                     },
                     stylesheet=generate_stylesheet(),
-                    style={'width': '100%',
-                            'height': '350px',
+                    style={'width': '70%',
+                            'height': '580px',
                             'background-color':'#fafafa',
                             'border': 'solid thin #cedded',
                             'border-radius': '5px',
@@ -70,99 +71,86 @@ cytograph =  cyto.Cytoscape(
                     boxSelectionEnabled=True,
             )
 
-app.layout = html.Div(
-    [
-    html.Div(
-        [
+app.layout = html.Div( [
+    html.Div([
             dcc.RadioItems(
                 options=[
-                    {'label': 'Ver1', 'value': 'v1'},
-                    {'label': 'Ver2', 'value': 'v2'},
+                    {'label': 'Conventional', 'value': 'v1'},
+                    {'label': 'Advanced', 'value': 'v2'},
                 ],
                 value='v1',
                 id='version_selector',
+                labelStyle ={'margin-right':'10px'}
             ),
-        ],
-        style={'margin-bottom':'20px'}
+        ], 
     ),
-    cytograph,
-    html.P('EdgeScore:', id='edge_score'),
     html.Div([
-        html.Div([
-            html.Div([
-                html.H3(id='drug_name'),
-                dash_table.DataTable(
-                    columns=[{'id': c, 'name': c} for c in ['Drug', 'Phase']],
-                    id='drug_table',
-                    style_cell_conditional=[
-                        {'if': {'column_id': 'Drug'},
-                        'width': '85%'},
-                        {'if': {'column_id': 'Phase'},
-                        'width': '15%'}
-                    ],
-                    page_action='none',
-                    fixed_rows={'headers': True},
-                    style_table={'height': 'auto', 'overflowY': 'auto'},
-                ),
-            ]) 
-        ], style={'width':'25%'}),
-        html.Div([
-            html.Div([
-                html.H3(id='ind_name'),
-                dash_table.DataTable(
-                    columns=[{'id': c, 'name': c} for c in ['mesh_heading', 'efo_term','max_phase']],
-                    id='indication_table',
-                    # style_cell_conditional=[
-                    #     {'if': {'column_id': 'mesh_heading'},
-                    #     'width': '85%'},
-                    #     {'if': {'column_id': 'max_phase'},
-                    #     'width': '15%'},
-                    # ],
-                    page_action='none',
-                    style_cell={
-                        'minWidth':'30px',
-                        'maxWidth': '200px',
-                    },
-                    fixed_rows={'headers': True},
-                    style_table={'height': 'auto', 'overflowY': 'auto'})
-            ])
-        ], style={'width':'70%', 'margin-left':'40px'}),
-    ], style={'display':'flex'}),
-    ]
+        cytograph,
+        # html.P('EdgeScore:, className="lead",', id='edge_score'),
+        html.Div(dbc.Jumbotron([
+            html.H2('Target', id='target'),
+            html.Hr(className="my-2"),
+            html.Div(id='info_sent'),
+         ], style={'height': '580px'}), style={'height': '580px', 'width': '30%'}
+        ),
+    ], style={'display': 'flex'}),
+    ], style={'padding': '5px'}
 )
 
 
-@app.callback([Output('drug_table', 'data'), Output('drug_table', 'style_data_conditional'), Output('drug_name', 'children')],
-            [Input('cytoscape', 'tapNodeData')])           
-def update_janbotron_by_tap(target):
+@app.callback([Output('info_sent', 'children'), Output('target', 'children')], [Input('cytoscape', 'mouseoverNodeData')])           
+def update_info_by_tap(target):
     target = target['id']
-    data, style = dm.make_drug_table(target)
-    return data, style, target
+    info = []
+    if target in dm.astrocyte:
+        info.append(html.P(' astrocyte', className="lead",))
+    if target in dm.microglia:
+        info.append(html.P(' microglia', className="lead",))
+    if target in dm.oligodendrocyte:
+        info.append(html.P(' oligodendrocyte', className="lead",))
+    if target in dm.oligodendrocyte_progenitor_cell:
+        info.append(html.P(' oligodendrocyte , progenitor cell', className="lead"))
+    if target in dm.perivascular:
+        info.append(html.P(' perivascular', className="lead",))
+    if target in dm.excitatory_neuron:
+        info.append(html.P(' excitatory neuron', className="lead",))
+    if target in dm.inhibitory_neuron:
+        info.append(html.P(' inhibitory neuron', className="lead",))
+    if target in dm.endothelial_cell:
+        info.append(html.P(' endothelial cell', className="lead",))
+    if target in dm.myelin_debris_clearance:
+        info.append(html.P(' myelin debris clearance', className="lead",))
+    if target in dm.remyelination:
+        info.append(html.P(' remyelination', className="lead",))
+    if target in dm.pred:
+        info.append(html.P(' AI予測遺伝子', className="lead",))
+
+    return info, target
 
 
-@app.callback([Output('indication_table', 'data'), Output('ind_name', 'children')],
-            [Input('drug_table', 'selected_cells')],
-            [State('drug_table', 'data')])           
-def update_indications(cells, data):
-    cell = cells[0]
-    row = cell['row']
+# @app.callback([Output('indication_table', 'data'), Output('ind_name', 'children')],
+#             [Input('drug_table', 'selected_cells')],
+#             [State('drug_table', 'data')])           
+# def update_indications(cells, data):
+#     cell = cells[0]
+#     row = cell['row']
 
-    df = pd.DataFrame.from_dict(data)
-    target = df.iloc[row, 0]
-    return dm.make_indications_tabledata(target), 'Drug Indication: '+target
+#     df = pd.DataFrame.from_dict(data)
+#     target = df.iloc[row, 0]
+#     return dm.make_indications_tabledata(target), 'Drug Indication: '+target
 
 
-@app.callback([Output('edge_score', 'children')],
-            [Input('cytoscape', 'tapEdgeData')])           
-def display_score_by_tap(target):
-    score = target['score']
-    return ['EdgeScore:{}'.format(score)]
+# @app.callback([Output('edge_score', 'children')],
+#             [Input('cytoscape', 'tapEdgeData')])           
+# def display_score_by_tap(target):
+#     score = target['score']
+#     return ['EdgeScore:{}'.format(score)]
 
 
 @app.callback([Output('cytoscape', 'elements')],
             [Input('version_selector', 'value')])   
 def update_cytoscape_by_version(version):
-    dm.update_selfvalue(version)
+    dm.update_graph(version)
     nodes, edges = dm.paging()
     es = nodes+edges
     return [es]
