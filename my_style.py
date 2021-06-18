@@ -24,7 +24,7 @@ def generate_stylesheet():
             "text-valign": 'bottom',
             # "text-valign": "surper",
             "text-halign": "center",
-            "background-color": "#dbe8ff",
+            "background-color": "#fcd5c0",
             "text-outline-color": "#2e2e2e",
             "text-outline-width": "1px",
             "color": "#2e2e2e",
@@ -56,9 +56,9 @@ def generate_stylesheet():
         },{
         "selector": ".causality",
         "style": {
-            "shape": 'square',
+            "shape": 'diamond',
             # "background-color": "#f553ba",
-            "background-color": "#fcba03",
+            "background-color": "#5975ff",
         } 
         },{
         "selector": ".responsive",

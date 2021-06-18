@@ -37,7 +37,7 @@ app = dash.Dash(__name__,
 server = app.server
 
 VALID_USERNAME_PASSWORD_PAIRS = {
-    'ngly1': 'fronteo2020'
+    'takedak': 'fronteok2021'
 }
 
 auth = dash_auth.BasicAuth(
@@ -122,8 +122,8 @@ def update_info_by_tap(target):
         info.append(html.P(' myelin debris clearance', className="lead",))
     if target in dm.remyelination:
         info.append(html.P(' remyelination', className="lead",))
-    if target in dm.pred:
-        info.append(html.P(' AI予測遺伝子', className="lead",))
+    # if target in dm.pred:
+    #     info.append(html.P(' AI予測遺伝子', className="lead",))
 
     return info, target
 
